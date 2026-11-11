@@ -189,3 +189,92 @@ const Controlador = {
 };
 
 document.addEventListener("DOMContentLoaded", () => Controlador.iniciar());
+
+// ... (Todo el código que ya tenías en tu controlador) ...
+
+
+// ====================================================
+// ===== BÚSQUEDA EN API REST (OPEN LIBRARY) =====
+// ====================================================
+const btnBuscarApi = document.getElementById('btnBuscarApi');
+const inputApiBusqueda = document.getElementById('inputApiBusqueda');
+const resultadosApi = document.getElementById('resultadosApi');
+const mensajeApi = document.getElementById('mensajeApi');
+
+if (btnBuscarApi) {
+    btnBuscarApi.addEventListener('click', async () => {
+        const termino = inputApiBusqueda.value.trim();
+        
+        if (!termino) {
+            mensajeApi.textContent = 'Por favor ingrese un título o autor para buscar.';
+            mensajeApi.style.color = 'red';
+            return;
+        }
+
+        mensajeApi.textContent = '🔍 Buscando en Open Library... Por favor espere.';
+        mensajeApi.style.color = '#0066cc';
+        resultadosApi.innerHTML = '';
+
+        try {
+            // Llamada al servicio independiente api.js
+            const libros = await ServicioAPI.buscarLibrosEnLinea(termino);
+
+            if (libros.length === 0) {
+                mensajeApi.textContent = 'No se encontraron libros con ese término.';
+                mensajeApi.style.color = 'orange';
+                return;
+            }
+
+            mensajeApi.textContent = `Se encontraron ${libros.length} resultados:`;
+            mensajeApi.style.color = 'green';
+
+            // Renderizar los resultados devueltos por la API
+            libros.forEach(libro => {
+                const tarjeta = document.createElement('article');
+                tarjeta.className = 'tarjeta';
+                tarjeta.innerHTML = `
+                    <img src="${libro.imagen}" alt="${libro.titulo}" class="tarjeta__imagen" style="max-height: 180px; object-fit: cover;">
+                    <div class="tarjeta__contenido">
+                        <h3 class="tarjeta__titulo">${libro.titulo}</h3>
+                        <p class="tarjeta__autor"><strong>Autor:</strong> ${libro.autor}</p>
+                        <p class="tarjeta__precio"><strong>Año:</strong> ${libro.anio}</p>
+                        <button class="boton boton--sm" onclick="agregarDesdeApi('${libro.titulo.replace(/'/g, "\\'")}', '${libro.autor.replace(/'/g, "\\'")}', '${libro.imagen}')">
+                            + Agregar al Inventario
+                        </button>
+                    </div>
+                `;
+                resultadosApi.appendChild(tarjeta);
+            });
+
+        } catch (error) {
+            mensajeApi.textContent = 'Error al conectar con el servicio de Open Library.';
+            mensajeApi.style.color = 'red';
+            console.error(error);
+        }
+    });
+}
+
+// Función global para importar un libro de la API al catálogo local
+window.agregarDesdeApi = function(titulo, autor, imagen) {
+    const nuevoProducto = {
+        id: Date.now(),
+        nombre: titulo,
+        autor: autor,
+        precio: 45000, // Precio asignado por defecto
+        existencias: 5,
+        categoria: 'General',
+        imagen: imagen || 'img/logo-libreria.svg',
+        caracteristicas: ['Edición Digital / API Import']
+    };
+
+    // Guarda en el modelo / localStorage
+    Modelo.agregarProducto(nuevoProducto);
+    
+    // Notifica y actualiza la vista
+    alert(`¡"${titulo}" ha sido agregado exitosamente a tu inventario!`);
+    if (typeof Vista !== 'undefined' && Vista.renderizar) {
+        Vista.renderizar();
+    } else {
+        location.reload();
+    }
+};
