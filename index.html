@@ -1,0 +1,521 @@
+<!Doctype html>
+<html lang="es">
+
+ <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <meta name="description"
+        content="Tienda en línea de libros, tu proxima gran historia esta en Papel & Tinta. Explora nuestra catalogo y promociónes" />
+     <title> Papel & Tinta | Libreria Online</title>
+     <link rel="icon" type="image/svg+xml" href="logo-libreria.svg">
+     <link rel="stylesheet" href="css/estilos.css" />
+ </head>
+ <body>
+     <a class="salto-contenido" href="#contenido">Saltar al contenido principal</a>
+     <header class="cabecera" id="inicio">
+        <div class="cabecera__marca">
+            <a href="#inicio" class="cabecera__enlace-logo">
+                <img src="img/logo-libreria.svg" alt="Logo oficial de Papel & Tinta" class="cabecera__logo">
+            </a>
+            <div class="cabecera__texto">
+                <h1 class="cabecera__titulo">Papel & Tinta</h1>
+                <p class="cabecera__lema">Tu próxima gran historia a un solo clic</p>
+            </div>
+        </div>
+
+        <nav class="menu" aria-label="Navegación principal">
+            <ul class="menu__lista">
+                 <li><a class="menu__enlace menu__enlace--activo" href="#inicio">Inicio</a></li>
+                 <li><a class="menu__enlace" href="#catalogo">Catálogo</a></li>
+                 <li><a class="menu__enlace" href="#inventario">Inventario</a></li>
+                 <li><a class="menu__enlace" href="#contacto">Contacto</a></li>
+                <li><a class="menu__enlace menu__enlace--carrito" href="#carrito">Carrito <span class="insignia" id="carritoNav">0</span></a></li>
+            </ul>
+        </nav>
+     </header>
+
+     <aside class="menu-lateral">
+        <nav class="menu-lateral__nav">
+            <ul class="menu-lateral__lista">
+               
+                <li><a href="#especificaciones">especificaciones</a></li>
+                <li><a href="#promociones">Promociones</a></li>
+                <li><a href="#indicadores">Indicadores</a></li>
+            </ul>
+        </nav>
+     </aside>
+
+     <div class="pagina">        
+            <!-- ===== BARRA LATERAL ===== -->
+           <aside class="lateral" aria-label="Filtros y resumen">
+
+              <!-- JavaScript crea aquí los botones de categoría -->
+              <section class="lateral__bloque">
+                  <h2 class="lateral__titulo">Categorías</h2>
+                 <ul class="categorias" id="listaCategorias"></ul>
+              </section>
+
+              <section class="lateral__bloque">
+                 <h2 class="lateral__titulo">Filtros</h2>
+                 <!-- Casilla para ver solo productos con unidades -->
+                 <label class="opcion">
+                     <input type="checkbox" id="soloDisponibles">
+                     <span>Mostrar solo disponibles</span>
+                 </label>
+             </section>
+
+             <!-- JavaScript escribe aquí los totales -->
+             <section class="lateral__bloque">
+                 <h2 class="lateral__titulo">Resumen</h2>
+                 <dl class="datos">
+                     <div class="datos__fila"><dt>Productos</dt><dd id="resumenTotal">0</dd></div>
+                     <div class="datos__fila"><dt>Agotados</dt><dd id="resumenAgotados">0</dd></div>
+                     <div class="datos__fila"><dt>Valor inventario</dt><dd id="resumenValor">$ 0</dd></div>
+                   </dl>
+              </section>
+
+             <!-- Aquí aparecen los productos agregados al carrito -->
+             <section class="lateral__bloque" id="carrito">
+                  <h2 class="lateral__titulo">Carrito</h2>
+                  <ul class="carrito" id="listaCarrito"></ul>
+                  <p class="carrito__total">Total: <strong id="carritoTotal">$ 0</strong></p>
+                  <button class="boton boton--secundario" type="button" id="vaciarCarrito">Vaciar carrito</button>
+             </section>
+           </aside>
+
+           <main id="contenido">
+               <section id="inicio" class="banner">
+                 <h2>Bienvenidos a Papel & Tinta</h2>
+                 <p> Somos tu libreria en linea de confianza. Explora un universo de historias donde encontrarás el catálogo
+                     más completo de <strong> novelas, cómics, mangas y literatura clásica </strong>
+                 </p>
+                 <p> Disfruta de nuestras promociones semanales y realiza tus pedidos con <strong> envios garantizados a todo
+                      el pais</strong>
+                 </p>
+                 <a href="#catalogo" class="banner__boton"> Explorar Catálogo</a>
+               </section>
+
+               <section class="agregar" aria-labelledby="titulo-agregar">
+                  <h2 class="agregar__titulo" id="titulo-agregar">Agregar un producto</h2>
+
+                 <form class="formulario formulario--rejilla" id="formProducto" novalidate>
+                     <div class="campo">
+                         <!-- Al hacer clic en el texto se activa el campo -->
+                         <label class="campo__etiqueta" for="nombre">Nombre del producto *</label>
+                         <input class="campo__control" type="text" id="nombre" name="nombre"
+                         placeholder="Ej. Cien años de soledad" autocomplete="off">
+                      </div>
+
+                     <div class="campo">
+                         <label class="campo__etiqueta" for="precio">Precio en pesos *</label>
+                      <!-- Aunque sea un número, JavaScript lo recibe como texto -->
+                 <input class="campo__control" type="number" id="precio" name="precio"
+                   placeholder="Ej. 150000" min="1" step="1">
+              </div>
+
+              <div class="campo">
+                 <label class="campo__etiqueta" for="existencias">Existencias</label>
+                 <input class="campo__control" type="number" id="existencias" name="existencias"
+                   placeholder="Ej. 5" min="0" step="1">
+              </div>
+
+              <div class="campo">
+                 <label class="campo__etiqueta" for="categoria">Categoría *</label>
+                 <!-- JavaScript llena las opciones -->
+                 <select class="campo__control" id="categoria" name="categoria"></select>
+               </div>
+                
+               <div class="campo">
+                 <!-- Al hacer clic en el texto se activa el campo -->
+                 <label class="campo__etiqueta" for="nombre_autor">Nombre del Autor *</label>
+                 <input class="campo__control" type="text" id="nombre_autor" name="autor"
+                   placeholder="Ej. Gabriel García Márquez" autocomplete="off">
+              </div>
+               <div class="campo">
+              <label class="campo__etiqueta" for="imagen">Imagen del libro *</label>
+               <!-- Recibe el nombre del archivo (ej. libro.jpg) o una URL de internet -->
+               <input class="campo__control" type="text" id="imagen" name="imagen"
+                placeholder="Ej. https://sitio.com/foto-libro.jpg">
+                </div>
+
+              <div class="campo campo--ancho">
+                 <label class="campo__etiqueta" for="caracteristicas">Características</label>
+                 <input class="campo__control" type="text" id="caracteristicas" name="caracteristicas"
+                   placeholder="Separadas por coma. Ej. pasta dura,300 hojas">
+                 <p class="campo__ayuda"></p>
+             </div>
+
+              <!-- Botón que envía el formulario -->
+             <div class="formulario__acciones">
+                 <button class="boton" type="submit">Guardar producto</button>
+             </div>
+                </form>
+
+             <!-- Aquí aparecen los mensajes de error o de éxito -->
+             <p class="mensaje" id="mensaje" aria-live="polite"></p>
+               </section>
+
+             
+              <section id="catalogo" class="catalogo" aria-labelledby="titulo-catalogo"></section>>
+
+                 <div class="catalogo__encabezado">
+                      <h2 class="catalogo__titulo" id="titulo-catalogo">Productos disponibles</h2>
+                     <div class="buscador">
+                          <label class="campo__etiqueta" for="buscador">Buscar por nombre</label>
+                         <input class="campo__control" type="search" id="buscador" placeholder="Escriba para filtrar">
+                       </div>
+                  </div>
+
+                  <p class="catalogo__descripcion"> Descubre nuestras lecturas más populares y
+                      agrega tus favoritas a la lista
+                     <span id="contador">0 resultados</span>
+                  </p>
+
+                 <div class="catalogo__contenedor"></div>
+              </section>
+
+               <!-- ===== TABLA DE INVENTARIO =====
+                JavaScript llena las filas -->
+               <section class="inventario" id="inventario" aria-labelledby="titulo-inventario">
+                   <h2 class="inventario__titulo" id="titulo-inventario">Inventario resumido</h2>
+                  <div class="tabla-contenedor">
+                  <table class="tabla">
+                  <caption class="tabla__titulo">Existencias por producto, actualizadas en vivo</caption>
+                 <thead>
+                  <tr>
+                     <th scope="col">Producto</th>
+                     <th scope="col">Autor</th>
+                     <th scope="col">Categoría</th>
+                     <th scope="col">Precio</th>
+                     <th scope="col">Existencias</th>
+                     <th scope="col">Estado</th>
+                     <th scope="col">Acciones</th>
+                   </tr>
+                 </thead>
+                  <tbody id="cuerpoTabla"></tbody>
+                 </table>
+                  </div>
+               </section>
+               
+                <!-- ===== PASOS PARA COMPRAR ===== -->
+                <section class="seccion" aria-labelledby="titulo-pasos">
+                   <h2 class="seccion__titulo" id="titulo-pasos">Pasos para comprar</h2>
+                   <!-- Lista numerada porque el orden importa -->
+                 <ol class="pasos">
+                      <li>Seleccione el producto que necesita.</li>
+                      <li>Agréguelo al carrito con el botón de la tarjeta.</li>
+                       <li>Envíe su solicitud en el formulario de contacto.</li>
+                   </ol>
+               </section>
+
+             <section id="especificaciones" class="especificaciones" aria-labelledby="titulo-especificaciones">
+             <h2 class="especificaciones__titulo">Especificaiones de Calidad</h2>
+             <p class="especificaciones__descripcion"> Conoce los estandares de impresión y los formatos disponibles en
+                nuestra libreria.</p>
+
+             <dl class="ficha-tecnica">
+                <dt class="ficha-tecnica__termino">Tipo de papel:</dt>
+                <dd class="ficha-tecnica__detalle"> Papel ahusado de 80g (libre de ácido) para evitar la fatiga visual
+                    durante lecturas prolongadas.
+                </dd>
+
+                <dt class="ficha-tecnica__termino">Encuadernación:</dt>
+                <dd class="ficha-tecnica__detalle"> Costura al hilo con lomo reforzado,garantizando alta durabilidad y
+                    resisitencia al uso continuo.
+                </dd>
+
+                <dt class="ficha-tecnica__termino">Idioma y traducción:</dt>
+                <dd class="ficha-tecnica__detalle"> Ediciones oficiales traducidas directamente del idioma original por
+                    traductores certificados.
+                 </dd>
+             </dl>
+
+             <h3 class="especificaciones__subtitulo"> Comparativa de formatos disponibles</h3>
+             <table class="tabla-formatos">
+                <thead>
+                    <tr>
+                        <th>Formato</th>
+                        <th>Tipo de portada</th>
+                        <th>Ideal para...</th>
+                        <th>Durabilidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Rústica (Tapa blanda)</strong></td>
+                        <td>Cartulina satinada de 300g</td>
+                        <td>Lectura diaria y transporte cómodo</td>
+                        <td>Media</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cartoné(Tapa dura)</strong></td>
+                        <td>Cartón rígido de alta calidad con sobrecubierta</td>
+                        <td>Coleccionistas y regalos especiales</td>
+                        <td>Alta</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Edición digital(eBook)</strong></td>
+                        <td>Archivo EPUB o PDF interativo</td>
+                        <td>Lectura en Kindle, tabletas o celulares </td>
+                        <td>Ilimitada</td>
+                    </tr>
+                </tbody>
+             </table>
+             </section>
+
+             <section id="promociones" class="promociones" aria-labelledby="titulo-promociones">
+            <h2 class="promociones__titulo">Top 5 Libros más vendidos</h2>
+            <p class="promociones__descripcion">Aprovecha los descuentos especiales en
+                los títulos preferidos por nuestros lectoresesta semana.
+            </p>
+
+            <ol class="promociones__ranking">
+                <li class="promociones-item">
+                    <h3 class="promociones-item__titulo"> 1. Cien alos de soledad - Gabriel García Márquez</h3>
+                    <p class="promociones-item__precio">
+                        Precio regular: <del>$65.000</del>
+                        Precio oferta: <mark>$52.000</mark>
+                    </p>
+                    <p><small>Oferta válida hasta el <time datetime="2026-09-30">30 de septiembre del
+                                2026</time></small></p>
+                    <a href="#contacto" class="promociones-item__boton ">Socilitar novela</a>
+                </li>
+
+                <li class="promociones-item">
+                    <h3 class="promociones-item__titulo"> 2. One pice Vol. 1 - Eiichiro Oda</h3>
+                    <p class="promociones-item__precio">
+                        Precio regular: <del>$48.000</del>
+                        Precio oferta: <mark>$38.400</mark>
+                    </p>
+                    <p><small>Oferta válida hasta el <time datetime="2026-09-30">30 de septiembre del
+                                2026</time></small></p>
+                    <a href="#contacto" class="promociones-item__boton ">Socilitar manga</a>
+                </li>
+
+                <li class="promociones-item">
+                    <h3 class="promociones-item__titulo">3. Watchmen - Alan Moore </h3>
+                    <p class="promociones-item__precio">
+                        Precio regular: <del>$95.000</del>
+                        Precio oferta: <mark>$80.000</mark>
+                    </p>
+                    <p><small>Oferta válida hasta el <time datetime="2026-09-30">30 de septiembre del
+                                2026</time></small></p>
+                    <a href="#contacto" class="promociones-item__boton ">Socilitar novela</a>
+                </li>
+
+                <li class="promociones-item">
+                    <h3 class="promociones-item__titulo">4. El principito - Antonie de Saint-Exupéry</h3>
+                    <p class="promociones-item__precio">
+                        Precio regular: <del>$35.000</del>
+                        Precio oferta: <mark>$28.000</mark>
+                    </p>
+                    <p><small>Oferta válida hasta el <time datetime="2026-09-30">30 de septiembre del
+                                2026</time></small></p>
+                    <a href="#contacto" class="promociones-item__boton ">Socilitar novela</a>
+                </li>
+
+                <li class="promociones-item">
+                    <h3 class="promociones-item__titulo">5. Habitos Atómicos - James Clear</h3>
+                    <p class="promociones-item__precio">
+                        Precio regular: <del>$68.000</del>
+                        Precio oferta: <mark>$58.000</mark>
+                    </p>
+                    <p><small>Oferta válida hasta el <time datetime="2026-09-30">30 de septiembre del
+                                2026</time></small></p>
+                    <a href="#contacto" class="promociones-item__boton ">Socilitar novela</a>
+                </li>
+            </ol>
+             </section>
+                   
+
+              <section id="planes" class="planes"aria-labelledby="titulo-planes">
+            <h2 class="planes__titulo">Planes de Garantía</h2>
+            <p class="planes__descripcion">Conoce los beneficios y coberturas disponibles para tus compras.</p>
+
+            <table class="tabla-garantia">
+                <caption>Tabla Informativa de Planes de Garantía de Compra y Servicios</caption>
+
+                <thead>
+                    <tr>
+                        <th scope="col">Servicio</th>
+                        <th scope="col">Plan Básico</th>
+                        <th scope="col">plan Pro</th>
+                        <th scope="col">plan Premium</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <th scope="row">Cobertura por Fallas de Imprenta</th>
+                        <td>30 días de cobertura</td>
+                        <td>60 días de cobertura</td>
+                        <td>120 días de cobertura</td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Protección en Envío</th>
+                        <td>Empaque de cartón estándar</td>
+                        <td>Empaque acolchado con plástico de burbujas</td>
+                        <td>Caja rígida protectora e impermeable contra humedad</td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Accesorios Incluidos</th>
+                        <td>Separador de páginas</td>
+                        <td>Separador + Resaltador + Post-its transparentes (1 color)</td>
+                        <td>Separador + Resaltador + Post-its transparentes (3 colores)</td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Costo del Servicio</th>
+                        <td>$0 (Incluido en la compra)</td>
+                        <td>$5.000 por ejemplar</td>
+                        <td>$15.000 por ejemplar</td>
+                    </tr>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <td colspan="4">*Todos los precios finales expuestos en esta tabla incluyen la tarifa legal del
+                            IVA (19%) aplicable sobre la prestación de servicios y accesorios.
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+              </section>
+             
+               <section class="seccion" id="contacto" aria-labelledby="titulo-contacto">
+        <h2 class="seccion__titulo" id="titulo-contacto">Contáctenos</h2>
+        <p class="seccion__texto">Los campos marcados con asterisco son obligatorios. Le respondemos en 24 horas.</p>
+
+        <form class="formulario" id="formContacto">
+          <!-- Los id empiezan con "contacto" para no repetirse con los de arriba -->
+          <div class="campo">
+            <label class="campo__etiqueta" for="contactoNombre">Nombre completo *</label>
+            <input class="campo__control" type="text" id="contactoNombre" name="nombre"
+                   required minlength="5" placeholder="Gloria Patiño Caro">
+            <p class="campo__ayuda">Mínimo cinco caracteres.</p>
+          </div>
+
+          <div class="campo">
+            <!-- Exige un correo con @ -->
+            <label class="campo__etiqueta" for="contactoCorreo">Correo electrónico *</label>
+            <input class="campo__control" type="email" id="contactoCorreo" name="correo"
+                   required placeholder="glorial@gmail.com">
+          </div>
+
+          <div class="campo">
+            <!-- Exige 10 números -->
+            <label class="campo__etiqueta" for="contactoTelefono">Teléfono</label>
+            <input class="campo__control" type="tel" id="contactoTelefono" name="telefono"
+                   pattern="[0-9]{10}" placeholder="3001234567">
+            <p class="campo__ayuda">Diez dígitos, sin espacios ni guiones.</p>
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="contactoProducto">Producto de interés *</label>
+            <!-- JavaScript llena la lista con los productos del catálogo -->
+            <select class="campo__control" id="contactoProducto" name="producto" required></select>
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="contactoCantidad">Cantidad *</label>
+            <input class="campo__control campo__control--corto" type="number"
+                   id="contactoCantidad" name="cantidad" required min="1" max="20" value="1">
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="contactoFecha">Fecha en que lo necesita</label>
+            <input class="campo__control campo__control--corto" type="date"
+                   id="contactoFecha" name="fecha">
+          </div>
+
+          <div class="campo">
+            <label class="campo__etiqueta" for="contactoMensaje">Mensaje *</label>
+            <textarea class="campo__control" id="contactoMensaje" name="mensaje"
+                      rows="5" required minlength="20" maxlength="400"
+                      placeholder="Cuéntenos qué necesita"></textarea>
+            <!-- JavaScript cuenta las letras mientras se escribe -->
+            <p class="campo__ayuda" id="contadorMensaje">0 de 400 caracteres (mínimo 20)</p>
+          </div>
+
+          <!-- Agrupa las opciones de respuesta -->
+          <fieldset class="grupo">
+            <legend class="grupo__titulo">Medio de respuesta preferido</legend>
+            <label class="opcion">
+              <input type="radio" name="medio" value="correo" checked>
+              <span>Correo electrónico</span>
+            </label>
+            <label class="opcion">
+              <input type="radio" name="medio" value="telefono">
+              <span>Llamada telefónica</span>
+            </label>
+          </fieldset>
+
+          <label class="opcion">
+            <input type="checkbox" name="terminos" required>
+            <span>Acepto el tratamiento de mis datos personales *</span>
+          </label>
+
+          <div class="formulario__acciones">
+            <button class="boton" type="submit">Enviar solicitud</button>
+            <button class="boton boton--secundario" type="reset">Limpiar</button>
+          </div>
+        </form>
+
+        <p class="mensaje" id="mensajeContacto" aria-live="polite"></p>
+      </section>
+             
+           </main>
+     </div>
+        <footer class="pie-pagina">
+
+        <div class="pie-pagina__seccion">
+            <h3 class="pie-pagina__subtitulo">Ubicación y Contacto</h3>
+            <address class="pie-pagina__direccion">
+                <strong>Librería Papel & Tinta</strong><br>
+                Calle 10# 43A-25, El Poblado<br>
+                Medellín, Colombia<br>
+                teléfono: <a href="tel:+573012345678">+57 301 234 5678</a>
+                correo: <a href="mailto:papelytinta@gmail.com">papelytinta@gmail.com</a>
+            </address>
+        </div>
+
+        <div class="pie-pagina__seccion">
+            <h3 class="pie-pagina__subtitulo">Síguenos en Redes Sociales</h3>
+            <ul class="pie-pagina__redes">
+                <li>
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                        class="pie-pagina__enlace-red">
+                        <img src="img/instagram.svg" alt="" class="pie-pagina__icono-red">
+                        <span>Instagram</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                        class="pie-pagina__enlace-red">
+                        <img src="img/facebook.svg" alt="" class="pie-pagina__icono-red">
+                        <span>Facebook</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="pie-pagina__enlace-red">
+                        <img src="img/X.svg" alt="" class="pie-pagina__icono-red">
+                        <span>X</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="pie-pagina__copyright">
+            <p>&copy; 2026 Papel & Tinta.Estefania Chavarria Patiño</p>
+            <p><small>Diseño y maquetación semántica accesible en HTML5.</small></p>
+        </div>
+        </footer>
+     <script src="js/modelo.js"></script>
+     <script src="js/vista.js"></script>
+     <script src="js/controlador.js"></script>
+ </body>
+ </html>
