@@ -1,3 +1,8 @@
+
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* Paleta Editorial */
   
@@ -234,10 +239,15 @@ img {
 /* La barra lateral se queda quieta al bajar */
 .lateral {
   position: sticky;
-  top: 16px;
+  top: 95px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: var(--sombra-tarjeta);
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Espacio entre cada tarjeta blanca */
+  gap: 1.5rem;
 }
 
 .seccion {
@@ -316,7 +326,17 @@ img {
 
 
 .catalogo {
-  padding: 2rem 0;
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-tarjeta);
+  transition: var(--transicion-suave);
+}
+
+.catalogo:hover {
+  box-shadow: var(--sombra-hover);
 }
 
 .catalogo__titulo {
@@ -338,20 +358,23 @@ img {
 .catalogo__contenedor {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 /* Barra lateral */
 .lateral_bloque {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin-bottom: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--color-fondo-alt);
+  padding-bottom: 1rem;
 }
 .lateral_bloque:last-child {
-  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;;
 }
 
 .lateral__titulo {
@@ -601,8 +624,17 @@ color: var(--color-texto-suave);
 
 /* Tabla */
 .tabla-contenedor {
- width: 100%;
- overflow-x: auto;
+  width: 100%;
+  max-height: 400px;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.tabla-contenedor thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .tabla {
@@ -1477,3 +1509,193 @@ legend.grupo__titulo {
   color: #ffffff;
 }
 
+
+/* ===== TARJETA PARA SECCIÓN AGREGAR PRODUCTO Y API ===== */
+.agregar,
+.api-busqueda {
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-tarjeta);
+  transition: var(--transicion-suave);
+}
+.api-busqueda .buscador {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+.api-busqueda .boton {
+  white-space: nowrap;
+}
+
+.agregar:hover,
+.api-busqueda:hover {
+  box-shadow: var(--sombra-hover);
+}
+
+.agregar__titulo {
+  font-family: var(--fuente-titulos);
+  font-size: 1.5rem;
+  color: var(--color-primario);
+  border-bottom: 2px solid var(--color-fondo-alt);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== ESTILO UNIFICADO DE TARJETAS EN BLOQUE PARA TODAS LAS SECCIONES ===== */
+.catalogo,
+.inventario,
+.especificaciones,
+.promociones,
+.planes,
+.seccion {
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--sombra-tarjeta);
+  transition: var(--transicion-suave);
+}
+
+.catalogo:hover,
+.inventario:hover,
+.especificaciones:hover,
+.promociones:hover,
+.planes:hover,
+.seccion:hover {
+  box-shadow: var(--sombra-hover);
+}
+
+/* Títulos internos alineados con el diseño principal */
+.catalogo__titulo,
+.inventario__titulo,
+.especificaciones__titulo,
+.promociones__titulo,
+.planes__titulo,
+.seccion__titulo {
+  font-family: var(--fuente-titulos);
+  font-size: 1.5rem;
+  color: var(--color-primario);
+  border-bottom: 2px solid var(--color-fondo-alt);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 2. Espaciado interno de las tarjetas y ajuste de portadas */
+.tarjeta {
+  background-color: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-borde);
+  padding: 1rem; /* Separa el texto y el botón de los bordes de la tarjeta */
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.tarjeta__imagen {
+  width: 100%;
+  aspect-ratio: 3 / 4; /* Proporción vertical ideal para portadas de libros */
+  object-fit: contain; /* Muestra la portada completa sin recortar los bordes */
+  background-color: var(--color-fondo-alt);
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.tarjeta__acciones {
+  margin-top: auto;
+  padding-top: 0.75rem; /* Da aire entre el texto de existencias y el botón */
+}
+
+.tabla td:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Separa verticalmente Editar de Eliminar */
+  align-items: flex-start;
+}
+
+.tabla td button {
+  width: 90px; /* Ambos botones quedan exactamente del mismo ancho */
+  text-align: center;
+  margin-right: 0;
+  padding: 6px 10px;
+}
+
+/* 4. Igualar altura de botones en formularios (Enviar y Limpiar) */
+.formulario__acciones .boton,
+.formulario__acciones .boton--secundario {
+  padding: 10px 20px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Ajuste para que las portadas de la API se vean completas y sin recortar */
+#resultadosApi img {
+  width: 100%;
+  height: 220px;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  background-color: var(--color-fondo-alt);
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 0.5rem;
+}
+
+/* Notificación flotante (Toast) */
+.notificacion-toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #361d32;
+  color: #ffffff;
+  padding: 16px 28px;
+  border-radius: 12px;
+  border-bottom: 5px solid #2ecc71;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 9999;
+}
+
+.notificacion-toast--error {
+  border-bottom-color: #e74c3c;
+}
+
+/* Banner de confirmación al agregar libro desde la API */
+#mensajeApi:not(:empty) {
+  display: inline-block;
+  margin: 12px 0;
+  padding: 12px 20px;
+  background-color: #361d32;
+  color: #ffffff !important;
+  border-left: 5px solid #2ecc71;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#mensaje:not(:empty) {
+  display: inline-block;
+  margin: 12px 0;
+  padding: 12px 20px;
+  background-color: #361d32;
+  color: #ffffff !important;
+  border-left: 5px solid #2ecc71;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Si Vista.mostrarMensaje le agrega clase de error, cambia el borde a rojo */
+#mensaje.mensaje--error:not(:empty),
+#mensaje.error:not(:empty) {
+  border-left-color: #e74c3c;
+}

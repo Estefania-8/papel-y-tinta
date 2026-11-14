@@ -24,7 +24,7 @@ const Vista = {
   },
 
   pintarCatalogo(productos) {
-    const contenedor = document.querySelector(".catalogo__contenedor");
+    const contenedor = document.querySelector("#contenedorCatalogo");
     const contador = document.querySelector("#contador");
     contenedor.innerHTML = "";
 
@@ -51,7 +51,7 @@ const Vista = {
     else if (p.existencias <= LIMITE_POCAS_UNIDADES) art.classList.add("tarjeta--pocas");
 
     art.innerHTML = `
-      <img class="tarjeta__imagen" src="${p.imagen}" alt="Portada de ${p.nombre}" width="640" height="420">
+     <img class="tarjeta__imagen" src="${p.imagen}" alt="Portada de ${p.nombre}">
       <p class="tarjeta__categoria">${p.categoria}</p>
       <h3 class="tarjeta__titulo">${p.nombre}</h3>
       <p class="tarjeta__autor">Autor: ${p.autor}</p>

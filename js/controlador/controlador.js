@@ -125,7 +125,9 @@ const Controlador = {
     if (p && confirm(`¿Deseas eliminar "${p.nombre}" del catálogo?`)) {
       Modelo.eliminar(id);
       if (this.idEditando === id) this.cancelarEdicion();
-      Vista.mostrarMensaje(document.querySelector("#mensaje"), `Se eliminó "${p.nombre}".`, "exito");
+      const mensajeElem = document.querySelector("#mensaje");
+      Vista.mostrarMensaje(mensajeElem, `✓ Se eliminó "${p.nombre}" del inventario.`, "exito");
+      mensajeElem.scrollIntoView({ behavior: "smooth", block: "center" });
       this.refrescar();
     }
   },
@@ -188,7 +190,6 @@ const Controlador = {
   }
 };
 
-document.addEventListener("DOMContentLoaded", () => Controlador.iniciar());
 
 // ... (Todo el código que ya tenías en tu controlador) ...
 
@@ -233,16 +234,22 @@ if (btnBuscarApi) {
                 const tarjeta = document.createElement('article');
                 tarjeta.className = 'tarjeta';
                 tarjeta.innerHTML = `
-                    <img src="${libro.imagen}" alt="${libro.titulo}" class="tarjeta__imagen" style="max-height: 180px; object-fit: cover;">
+                    <img src="${libro.imagen}" alt="${libro.titulo}" class="tarjeta__imagen">
                     <div class="tarjeta__contenido">
                         <h3 class="tarjeta__titulo">${libro.titulo}</h3>
                         <p class="tarjeta__autor"><strong>Autor:</strong> ${libro.autor}</p>
                         <p class="tarjeta__precio"><strong>Año:</strong> ${libro.anio}</p>
-                        <button class="boton boton--sm" onclick="agregarDesdeApi('${libro.titulo.replace(/'/g, "\\'")}', '${libro.autor.replace(/'/g, "\\'")}', '${libro.imagen}')">
-                            + Agregar al Inventario
-                        </button>
+                    </div>
+                    <div class="tarjeta__acciones">
+                       <button type="button" class="boton btn-agregar-api">
+                         Agregar al Inventario
+                      </button>
                     </div>
                 `;
+                const btnAgregar = tarjeta.querySelector('.btn-agregar-api');
+                btnAgregar.addEventListener('click', () => {
+                window.agregarDesdeApi(libro.titulo, libro.autor, libro.imagen);
+                });
                 resultadosApi.appendChild(tarjeta);
             });
 
@@ -254,27 +261,73 @@ if (btnBuscarApi) {
     });
 }
 
+// Función para mostrar notificación flotante estilizada
+function mostrarNotificacion(mensaje, esError = false) {
+  const toast = document.createElement('div');
+  toast.className = 'notificacion-toast';
+  if (esError) toast.style.borderLeftColor = '#e74c3c';
+  toast.textContent = mensaje;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('visible'));
+
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+function mostrarNotificacion(mensaje, esError = false) {
+  const anterior = document.getElementById('toast-aviso');
+  if (anterior) anterior.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast-aviso';
+  toast.className = esError ? 'notificacion-toast notificacion-toast--error' : 'notificacion-toast';
+  toast.textContent = mensaje;
+
+  document.documentElement.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3500);
+}
 // Función global para importar un libro de la API al catálogo local
 window.agregarDesdeApi = function(titulo, autor, imagen) {
+  try {
     const nuevoProducto = {
-        id: Date.now(),
-        nombre: titulo,
-        autor: autor,
-        precio: 45000, // Precio asignado por defecto
-        existencias: 5,
-        categoria: 'General',
-        imagen: imagen || 'img/logo-libreria.svg',
-        caracteristicas: ['Edición Digital / API Import']
+      nombre: titulo,
+      autor: autor || 'Autor desconocido',
+      precio: 45000,
+      existencias: 5,
+      categoria: 'Narrativa y Ficción',
+      imagen: imagen || 'img/logo-libreria.svg',
+      caracteristicas: [
+        'Pasta blanda',
+        'Importado desde Open Library',
+        'Edición estándar'
+      ]
     };
 
-    // Guarda en el modelo / localStorage
-    Modelo.agregarProducto(nuevoProducto);
-    
-    // Notifica y actualiza la vista
-    alert(`¡"${titulo}" ha sido agregado exitosamente a tu inventario!`);
-    if (typeof Vista !== 'undefined' && Vista.renderizar) {
-        Vista.renderizar();
-    } else {
-        location.reload();
+    // 1. Guarda en el modelo / localStorage
+  Modelo.agregar(nuevoProducto);
+
+    // 2. Muestra el aviso justo encima de los resultados (imposible que se oculte)
+    const avisoApi = document.getElementById('mensajeApi');
+    if (avisoApi) {
+      avisoApi.style.color = '#ffffff';
+      avisoApi.textContent = `✓ "${titulo}" fue agregado al inventario correctamente.`;
     }
+
+    // 3. Refresca TODA la interfaz (catálogo, tabla de inventario, contadores y selects)
+    Controlador.refrescar();
+
+    // 4. Baja el scroll de la tabla automáticamente para mostrar el libro nuevo al final
+    const contenedorTabla = document.querySelector('.tabla-contenedor');
+    if (contenedorTabla) {
+      contenedorTabla.scrollTop = contenedorTabla.scrollHeight;
+    }
+  } catch (error) {
+    console.error('Detalle del error al agregar:', error);
+  }
 };
