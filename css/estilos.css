@@ -1699,3 +1699,26 @@ legend.grupo__titulo {
 #mensaje.error:not(:empty) {
   border-left-color: #e74c3c;
 }
+
+
+.inventario .formulario--rejilla {
+  gap: 12px;
+  align-items: end;
+}
+
+#btnExportarCsv {
+  width: 100%;
+  height: 43px;
+  background-color: var(--color-primario, #3B2042);
+  color: #ffffff;
+  border: 1px solid var(--color-primario, #3B2042);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transicion-suave);
+}
+
+#btnExportarCsv:hover {
+  background-color: var(--color-primario-oscuro, #25132B);
+  border-color: var(--color-primario-oscuro, #25132B);
+}

@@ -4,11 +4,6 @@
 const ServicioAPI = {
   URL_BASE: "https://openlibrary.org/search.json",
 
-  /**
-   * Busca libros en internet mediante Open Library REST API
-   * @param {string} termino - Texto o título a buscar
-   * @returns {Promise<Array>} Lista de libros simplificada
-   */
   async buscarLibrosEnLinea(termino) {
     if (!termino || termino.trim() === "") return [];
 
@@ -17,7 +12,7 @@ const ServicioAPI = {
 
       // Validación de respuesta HTTP correcta (200-299)
       if (!respuesta.ok) {
-        throw new Error(`Error en la petición: ${respuesta.status} ${respuesta.statusText}`);
+        throw new Error(`Error en la petición: ${respuesta.status}`);
       }
 
       const datos = await respuesta.json();
@@ -31,13 +26,12 @@ const ServicioAPI = {
           anio: doc.first_publish_year || "N/A",
           imagen: idPortada
             ? `https://covers.openlibrary.org/b/id/${idPortada}-M.jpg`
-            : "https://via.placeholder.com/150?text=Sin+Portada"
+            : "img/logo-libreria.svg"
         };
       });
 
     } catch (error) {
-      console.error("Error en ServicioAPI:", error.message);
-      throw new Error("No se pudo conectar con el catálogo en línea. Verifique su conexión.");
+      throw new Error("No se pudo conectar con el catálogo en línea. Verifique su conexión a internet.");
     }
   }
 };

@@ -7,7 +7,7 @@
      <meta name="description"
         content="Tienda en línea de libros, tu proxima gran historia esta en Papel & Tinta. Explora nuestra catalogo y promociónes" />
      <title> Papel & Tinta | Libreria Online</title>
-     <link rel="icon" type="image/svg+xml" href="logo-libreria.svg">
+     <link rel="icon" type="image/svg+xml" href="img/logo-libreria.svg">
      <link rel="stylesheet" href="css/estilos.css" />
  </head>
  <body>
@@ -160,6 +160,7 @@
                  <h2 class="seccion__titulo">Buscar Libros en Línea</h2>
                  <p>Consulte la base de datos pública global y agregue títulos directamente a su catálogo.</p>
                  <div class="buscador">
+                    <label class="campo__etiqueta" for="inputApiBusqueda">Título o autor:</label>
                      <input class="campo__control" type="text" id="inputApiBusqueda" placeholder="Ej. Cien años de soledad, Don Quijote...">
                      <button class="boton" type="button" id="btnBuscarApi">Buscar en Línea</button>
                  </div>
@@ -187,37 +188,57 @@
                <!-- ===== TABLA DE INVENTARIO =====
                 JavaScript llena las filas -->
                <section class="inventario" id="inventario" aria-labelledby="titulo-inventario">
-                   <h2 class="inventario__titulo" id="titulo-inventario">Inventario resumido</h2>
-                  <div class="tabla-contenedor">
-                  <table class="tabla">
-                  <caption class="tabla__titulo">Existencias por producto, actualizadas en vivo</caption>
-                 <thead>
-                  <tr>
-                     <th scope="col">Producto</th>
-                     <th scope="col">Autor</th>
-                     <th scope="col">Categoría</th>
-                     <th scope="col">Precio</th>
-                     <th scope="col">Existencias</th>
-                     <th scope="col">Estado</th>
-                     <th scope="col">Acciones</th>
-                   </tr>
-                 </thead>
-                  <tbody id="cuerpoTabla"></tbody>
-                 </table>
-                  </div>
-               </section>
-               
-                <!-- ===== PASOS PARA COMPRAR ===== -->
-                <section class="seccion" aria-labelledby="titulo-pasos">
-                   <h2 class="seccion__titulo" id="titulo-pasos">Pasos para comprar</h2>
-                   <!-- Lista numerada porque el orden importa -->
-                 <ol class="pasos">
-                      <li>Seleccione el producto que necesita.</li>
-                      <li>Agréguelo al carrito con el botón de la tarjeta.</li>
-                       <li>Envíe su solicitud en el formulario de contacto.</li>
-                   </ol>
-               </section>
+                  <h2 class="inventario__titulo" id="titulo-inventario">Inventario resumido</h2>
 
+                  <div class="formulario formulario--rejilla" style="margin-bottom: 1rem;">
+                      <div class="campo">
+                         <label class="campo__etiqueta" for="buscadorTabla">Buscar en tabla</label>
+                         <input class="campo__control" type="search" id="buscadorTabla" placeholder="Nombre o autor...">
+                       </div>
+                     <div class="campo">
+                         <label class="campo__etiqueta" for="filtroTablaCategoria">Filtrar categoría</label>
+                         <select class="campo__control" id="filtroTablaCategoria"></select>
+                     </div>
+                     <div class="campo">
+                         <label class="campo__etiqueta" for="filtroTablaEstado">Estado</label>
+                         <select class="campo__control" id="filtroTablaEstado">
+                             <option value="Todos">Todos</option>
+                             <option value="Disponible">Disponible</option>
+                             <option value="Agotado">Agotado</option>
+                          </select>
+                     </div>
+                      <div class="campo" style="display:flex; align-items:flex-end;">
+                         <button type="button" class="boton boton--secundario" id="btnExportarCsv">Exportar CSV</button>
+                      </div>
+                  </div>
+
+                  <div class="tabla-contenedor">
+                     <table class="tabla">
+                         <caption class="tabla__titulo">Haz clic en Producto, Autor, Precio o Existencias para ordenar</caption>
+                         <thead>
+                             <tr>
+                                 <th scope="col" data-orden="nombre">Producto ↕</th>
+                                 <th scope="col" data-orden="autor">Autor ↕</th>
+                                 <th scope="col" data-orden="categoria">Categoría ↕</th>
+                                 <th scope="col" data-orden="precio">Precio ↕</th>
+                                 <th scope="col" data-orden="existencias">Existencias ↕</th>
+                                 <th scope="col">Estado</th>
+                                 <th scope="col">Acciones</th>
+                              </tr>
+                          </thead>
+                         <tbody id="cuerpoTabla"></tbody>
+                      </table>
+                  </div>
+
+                  <div class="formulario__acciones" style="justify-content: space-between;">
+                     <span id="infoPaginacion" class="campo__ayuda">Página 1 de 1</span>
+                     <div>
+                         <button type="button" class="boton boton--secundario" id="btnPaginaAnterior">Anterior</button>
+                         <button type="button" class="boton boton--secundario" id="btnPaginaSiguiente">Siguiente</button>
+                      </div>
+                  </div>
+              </section>
+              
              <section id="especificaciones" class="especificaciones" aria-labelledby="titulo-especificaciones">
              <h2 class="especificaciones__titulo">Especificaiones de Calidad</h2>
              <p class="especificaciones__descripcion"> Conoce los estandares de impresión y los formatos disponibles en

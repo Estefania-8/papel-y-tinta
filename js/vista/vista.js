@@ -1,5 +1,4 @@
-// ===================== CAPA DE PRESENTACIÓN (VISTA) =====================
-// Manipula el DOM, pinta catálogos, tablas y elementos visuales. No maneja lógica directa.
+
 
 const Vista = {
   formateadorMoneda: new Intl.NumberFormat("es-CO", {
@@ -43,54 +42,126 @@ const Vista = {
     contador.textContent = `Mostrando ${productos.length} ${termino}.`;
   },
 
-  crearTarjeta(p) {
+ crearTarjeta(p) {
     const art = document.createElement("article");
     art.className = "tarjeta";
 
     if (p.existencias === 0) art.classList.add("tarjeta--agotada");
     else if (p.existencias <= LIMITE_POCAS_UNIDADES) art.classList.add("tarjeta--pocas");
 
-    art.innerHTML = `
-     <img class="tarjeta__imagen" src="${p.imagen}" alt="Portada de ${p.nombre}">
-      <p class="tarjeta__categoria">${p.categoria}</p>
-      <h3 class="tarjeta__titulo">${p.nombre}</h3>
-      <p class="tarjeta__autor">Autor: ${p.autor}</p>
-      <p class="tarjeta__precio">${this.formatearPesos(p.precio)}</p>
-      <ul class="tarjeta__lista">
-        ${p.caracteristicas.map((c) => `<li>${c}</li>`).join("")}
-      </ul>
-      <p class="tarjeta__estado">${this.describirExistencias(p.existencias)} · IVA ${this.formatearPesos(this.calcularIva(p.precio))}</p>
-      <div class="tarjeta__acciones">
-        <button type="button" class="boton boton--carrito" data-id="${p.id}" ${p.existencias === 0 ? "disabled" : ""}>
-          ${p.existencias > 0 ? "Agregar al carrito" : "No disponible"}
-        </button>
-      </div>
-    `;
+    const img = document.createElement("img");
+    img.className = "tarjeta__imagen";
+    img.src = p.imagen;
+    img.alt = `Portada de ${p.nombre}`;
+
+    const cat = document.createElement("p");
+    cat.className = "tarjeta__categoria";
+    cat.textContent = p.categoria;
+
+    const titulo = document.createElement("h3");
+    titulo.className = "tarjeta__titulo";
+    titulo.textContent = p.nombre;
+
+    const autor = document.createElement("p");
+    autor.className = "tarjeta__autor";
+    autor.textContent = `Autor: ${p.autor}`;
+
+    const precio = document.createElement("p");
+    precio.className = "tarjeta__precio";
+    precio.textContent = this.formatearPesos(p.precio);
+
+    const lista = document.createElement("ul");
+    lista.className = "tarjeta__lista";
+    p.caracteristicas.forEach((c) => {
+      const li = document.createElement("li");
+      li.textContent = c;
+      lista.appendChild(li);
+    });
+
+    const estado = document.createElement("p");
+    estado.className = "tarjeta__estado";
+    estado.textContent = `${this.describirExistencias(p.existencias)} · IVA ${this.formatearPesos(this.calcularIva(p.precio))}`;
+
+    const acciones = document.createElement("div");
+    acciones.className = "tarjeta__acciones";
+
+    const btnCarrito = document.createElement("button");
+    btnCarrito.type = "button";
+    btnCarrito.className = "boton boton--carrito";
+    btnCarrito.dataset.id = p.id;
+    btnCarrito.disabled = p.existencias === 0;
+    btnCarrito.textContent = p.existencias > 0 ? "Agregar al carrito" : "No disponible";
+
+    acciones.appendChild(btnCarrito);
+    art.append(img, cat, titulo, autor, precio, lista, estado, acciones);
     return art;
   },
 
-  pintarTabla(productos) {
+ pintarTabla(datosTabla) {
+    const { filas, paginaActual, totalPaginas, totalRegistros } = datosTabla;
     const cuerpo = document.querySelector("#cuerpoTabla");
     cuerpo.innerHTML = "";
 
-    productos.forEach((p) => {
-      const fila = document.createElement("tr");
-      if (p.existencias === 0) fila.classList.add("tabla__fila--agotada");
+    if (filas.length === 0) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 7;
+      td.textContent = "No se encontraron registros con los filtros aplicados.";
+      td.style.textAlign = "center";
+      tr.appendChild(td);
+      cuerpo.appendChild(tr);
+    } else {
+      filas.forEach((p) => {
+        const fila = document.createElement("tr");
+        if (p.existencias === 0) fila.classList.add("tabla__fila--agotada");
 
-      fila.innerHTML = `
-        <td>${p.nombre}</td>
-        <td>${p.autor}</td>
-        <td>${p.categoria}</td>
-        <td>${this.formatearPesos(p.precio)}</td>
-        <td>${p.existencias}</td>
-        <td>${p.existencias > 0 ? "Disponible" : "Agotado"}</td>
-        <td>
-        <button type="button" class="boton boton--tabla-editar" data-accion="editar" data-id="${p.id}">Editar</button>
-        <button type="button" class="boton boton--tabla-eliminar" data-accion="eliminar" data-id="${p.id}">Eliminar</button>
-       </td>
-      `;
-      cuerpo.appendChild(fila);
-    });
+        const celdasTexto = [
+          p.nombre,
+          p.autor,
+          p.categoria,
+          this.formatearPesos(p.precio),
+          String(p.existencias),
+          p.existencias > 0 ? "Disponible" : "Agotado"
+        ];
+
+        celdasTexto.forEach((texto) => {
+          const td = document.createElement("td");
+          td.textContent = texto;
+          fila.appendChild(td);
+        });
+
+        const tdAcciones = document.createElement("td");
+
+        const btnEditar = document.createElement("button");
+        btnEditar.type = "button";
+        btnEditar.className = "boton boton--tabla-editar";
+        btnEditar.dataset.accion = "editar";
+        btnEditar.dataset.id = p.id;
+        btnEditar.textContent = "Editar";
+
+        const btnEliminar = document.createElement("button");
+        btnEliminar.type = "button";
+        btnEliminar.className = "boton boton--tabla-eliminar";
+        btnEliminar.dataset.accion = "eliminar";
+        btnEliminar.dataset.id = p.id;
+        btnEliminar.textContent = "Eliminar";
+
+        tdAcciones.append(btnEditar, btnEliminar);
+        fila.appendChild(tdAcciones);
+        cuerpo.appendChild(fila);
+      });
+    }
+
+    // Actualizar controles de paginación
+    const infoPag = document.querySelector("#infoPaginacion");
+    const btnAnt = document.querySelector("#btnPaginaAnterior");
+    const btnSig = document.querySelector("#btnPaginaSiguiente");
+
+    if (infoPag) {
+      infoPag.textContent = `Página ${paginaActual} de ${totalPaginas} (${totalRegistros} registros)`;
+    }
+    if (btnAnt) btnAnt.disabled = paginaActual <= 1;
+    if (btnSig) btnSig.disabled = paginaActual >= totalPaginas;
   },
 
   pintarCategorias(categorias, categoriaActual, productos) {
@@ -104,13 +175,20 @@ const Vista = {
         : productos.filter((p) => p.categoria === nombre).length;
 
       const li = document.createElement("li");
-      const esActiva = nombre === categoriaActual;
-      li.innerHTML = `
-        <button type="button" class="categorias__boton ${esActiva ? "categorias__boton--activa" : ""}" data-categoria="${nombre}">
-          <span>${nombre}</span>
-          <span class="categorias__numero">${cantidad}</span>
-        </button>
-      `;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `categorias__boton ${nombre === categoriaActual ? "categorias__boton--activa" : ""}`;
+      btn.dataset.categoria = nombre;
+
+      const spanNombre = document.createElement("span");
+      spanNombre.textContent = nombre;
+
+      const spanNum = document.createElement("span");
+      spanNum.className = "categorias__numero";
+      spanNum.textContent = cantidad;
+
+      btn.append(spanNombre, spanNum);
+      li.appendChild(btn);
       listaCategorias.appendChild(li);
     });
   },
@@ -126,14 +204,18 @@ const Vista = {
     listaCarrito.innerHTML = "";
 
     if (carrito.length === 0) {
-      listaCarrito.innerHTML = `<li class="carrito__vacio">Todavía no ha agregado productos.</li>`;
+      const liVacio = document.createElement("li");
+      liVacio.className = "carrito__vacio";
+      liVacio.textContent = "Todavía no ha agregado productos.";
+      listaCarrito.appendChild(liVacio);
     } else {
       carrito.forEach((item) => {
         const li = document.createElement("li");
-        li.innerHTML = `
-          <span>${item.cantidad} × ${item.nombre}</span>
-          <span>${this.formatearPesos(item.precio * item.cantidad)}</span>
-        `;
+        const spanNombre = document.createElement("span");
+        spanNombre.textContent = `${item.cantidad} × ${item.nombre}`;
+        const spanPrecio = document.createElement("span");
+        spanPrecio.textContent = this.formatearPesos(item.precio * item.cantidad);
+        li.append(spanNombre, spanPrecio);
         listaCarrito.appendChild(li);
       });
     }
@@ -142,8 +224,58 @@ const Vista = {
     document.querySelector("#carritoNav").textContent = totalUnidades;
   },
 
+  pintarResultadosApi(libros) {
+    const contenedor = document.querySelector("#resultadosApi");
+    contenedor.innerHTML = "";
+
+    libros.forEach((libro, indice) => {
+      const tarjeta = document.createElement("article");
+      tarjeta.className = "tarjeta";
+
+      const img = document.createElement("img");
+      img.src = libro.imagen;
+      img.alt = `Portada de ${libro.titulo}`;
+      img.className = "tarjeta__imagen";
+
+      const contenido = document.createElement("div");
+      contenido.className = "tarjeta__contenido";
+
+      const titulo = document.createElement("h3");
+      titulo.className = "tarjeta__titulo";
+      titulo.textContent = libro.titulo;
+
+      const autor = document.createElement("p");
+      autor.className = "tarjeta__autor";
+      autor.textContent = `Autor: ${libro.autor}`;
+
+      const anio = document.createElement("p");
+      anio.className = "tarjeta__precio";
+      anio.textContent = `Año: ${libro.anio}`;
+
+      contenido.append(titulo, autor, anio);
+
+      const acciones = document.createElement("div");
+      acciones.className = "tarjeta__acciones";
+
+      const btnAgregar = document.createElement("button");
+      btnAgregar.type = "button";
+      btnAgregar.className = "boton btn-agregar-api";
+      btnAgregar.dataset.indice = indice;
+      btnAgregar.textContent = "Agregar al Inventario";
+
+      acciones.appendChild(btnAgregar);
+      tarjeta.append(img, contenido, acciones);
+      contenedor.appendChild(tarjeta);
+    });
+  },
+
   llenarSelect(selectElement, opciones, textoInicial) {
-    selectElement.innerHTML = `<option value="">${textoInicial}</option>`;
+    selectElement.innerHTML = "";
+    const optInicial = document.createElement("option");
+    optInicial.value = "";
+    optInicial.textContent = textoInicial;
+    selectElement.appendChild(optInicial);
+
     opciones.forEach((opcion) => {
       const opt = document.createElement("option");
       opt.value = opcion;
@@ -204,7 +336,20 @@ const Vista = {
   },
 
   mostrarMensaje(elemento, texto, tipo) {
+    if (!elemento) return;
     elemento.textContent = texto;
     elemento.className = `mensaje ${tipo === "error" ? "mensaje--error" : "mensaje--exito"}`;
+  },
+
+  descargarArchivoCSV(contenidoCSV, nombreArchivo) {
+    const blob = new Blob(["\uFEFF" + contenidoCSV], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = nombreArchivo;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(url);
   }
 };

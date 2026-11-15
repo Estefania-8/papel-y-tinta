@@ -12,6 +12,16 @@ const Modelo = {
   categoriaActual: "Todas",
   soloDisponibles: false,
 
+  tablaFiltros: {
+    busqueda: "",
+    categoria: "Todas",
+    estado: "Todos",
+    ordenCampo: "id",
+    ordenDir: "asc",
+    paginaActual: 1,
+    filasPorPagina: 5
+  },
+
   // Inicializa o recupera los datos desde localStorage
   cargar() {
     const guardado = localStorage.getItem(CLAVE_STORAGE);
@@ -48,7 +58,7 @@ const Modelo = {
     localStorage.setItem(CLAVE_STORAGE, JSON.stringify(this.productos));
   },
 
-  // Reglas de negocio requeridas por la especificación
+  // Reglas de negocio 
   validar({ id, nombre, autor, precio, existencias, categoria, imagen }) {
     const errores = [];
 
@@ -194,5 +204,69 @@ const Modelo = {
       const coincideDisp = !this.soloDisponibles || p.existencias > 0;
       return coincideTexto && coincideCat && coincideDisp;
     });
+  },
+
+  // Procesa búsqueda, filtros combinados, ordenamiento (SORT) y paginación de la tabla
+  obtenerDatosTabla() {
+    const { busqueda, categoria, estado, ordenCampo, ordenDir, filasPorPagina } = this.tablaFiltros;
+    const texto = busqueda.trim().toLowerCase();
+
+    // 1. Filtrar (filter)
+    const filtrados = this.productos.filter((p) => {
+      const coincideTexto = p.nombre.toLowerCase().includes(texto) || p.autor.toLowerCase().includes(texto);
+      const coincideCat = categoria === "Todas" || p.categoria === categoria;
+      const coincideEstado =
+        estado === "Todos" ||
+        (estado === "Disponible" && p.existencias > 0) ||
+        (estado === "Agotado" && p.existencias === 0);
+      return coincideTexto && coincideCat && coincideEstado;
+    });
+
+    // 2. Ordenar (sort) - usamos [...filtrados] para no mutar el arreglo original
+    const ordenados = [...filtrados].sort((a, b) => {
+      let comparacion = 0;
+      if (typeof a[ordenCampo] === "string") {
+        comparacion = a[ordenCampo].localeCompare(b[ordenCampo]);
+      } else {
+        comparacion = a[ordenCampo] - b[ordenCampo];
+      }
+      return ordenDir === "asc" ? comparacion : -comparacion;
+    });
+
+    // 3. Paginar
+    const totalRegistros = ordenados.length;
+    const totalPaginas = Math.max(1, Math.ceil(totalRegistros / filasPorPagina));
+    if (this.tablaFiltros.paginaActual > totalPaginas) {
+      this.tablaFiltros.paginaActual = totalPaginas;
+    }
+
+    const inicio = (this.tablaFiltros.paginaActual - 1) * filasPorPagina;
+    const paginados = ordenados.slice(inicio, inicio + filasPorPagina);
+
+    return {
+      filas: paginados,
+      todosFiltrados: ordenados,
+      paginaActual: this.tablaFiltros.paginaActual,
+      totalPaginas,
+      totalRegistros
+    };
+  },
+
+  // Genera el contenido CSV de los productos filtrados
+  generarCSV() {
+    const { todosFiltrados } = this.obtenerDatosTabla();
+    const encabezados = ["ID", "Producto", "Autor", "Categoría", "Precio", "Existencias", "Estado"];
+    const filas = todosFiltrados.map((p) => [
+      p.id,
+      `"${p.nombre.replace(/"/g, '""')}"`,
+      `"${p.autor.replace(/"/g, '""')}"`,
+      `"${p.categoria}"`,
+      p.precio,
+      p.existencias,
+      p.existencias > 0 ? "Disponible" : "Agotado"
+    ]);
+
+    return [encabezados.join(","), ...filas.map((f) => f.join(","))].join("\n");
   }
 };
+  

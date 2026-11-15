@@ -3,13 +3,15 @@
 
 const Controlador = {
   idEditando: null,
+  resultadosApiActuales: [],
 
   iniciar() {
     Modelo.cargar();
 
     // Inicializar Selects
     Vista.llenarSelect(document.querySelector("#categoria"), CATEGORIAS_LIBROS, "Seleccione una categoría");
-    
+    Vista.llenarSelect(document.querySelector("#filtroTablaCategoria"), CATEGORIAS_LIBROS, "Todas las categorías");
+
     this.refrescar();
 
     // 1. Evento Submit: Guardar / Editar Producto
@@ -34,7 +36,7 @@ const Controlador = {
     });
 
     // 3. Delegación de eventos para el CATÁLOGO (Agregar al carrito)
-    document.querySelector(".catalogo__contenedor").addEventListener("click", (e) => {
+    document.querySelector("#contenedorCatalogo").addEventListener("click", (e) => {
       const boton = e.target.closest("button");
       if (!boton) return;
 
@@ -51,12 +53,12 @@ const Controlador = {
       }
     });
 
-    // 5. Búsqueda en tiempo real
+    // 5. Búsqueda en tiempo real en catálogo
     document.querySelector("#buscador").addEventListener("input", () => {
       this.refrescarCatalogo();
     });
 
-    // 6. Selección de categorías
+    // 6. Selección de categorías en barra lateral
     document.querySelector("#listaCategorias").addEventListener("click", (e) => {
       const boton = e.target.closest(".categorias__boton");
       if (boton) {
@@ -65,7 +67,7 @@ const Controlador = {
       }
     });
 
-    // 7. Filtro Disponibles
+    // 7. Filtro Disponibles en barra lateral
     document.querySelector("#soloDisponibles").addEventListener("change", (e) => {
       Modelo.soloDisponibles = e.target.checked;
       this.refrescarCatalogo();
@@ -77,8 +79,135 @@ const Controlador = {
       this.refrescarCarrito();
     });
 
-    // 9. Formulario de Contacto
+    // 9. Controles de la TABLA DE DATOS
+    this.iniciarEventosTabla();
+
+    // 10. Consumo de API REST (Open Library)
+    this.iniciarEventosApi();
+
+    // 11. Formulario de Contacto
     this.iniciarFormularioContacto();
+  },
+
+  iniciarEventosTabla() {
+    document.querySelector("#buscadorTabla").addEventListener("input", (e) => {
+      Modelo.tablaFiltros.busqueda = e.target.value;
+      Modelo.tablaFiltros.paginaActual = 1;
+      this.refrescarTabla();
+    });
+
+    document.querySelector("#filtroTablaCategoria").addEventListener("change", (e) => {
+      Modelo.tablaFiltros.categoria = e.target.value || "Todas";
+      Modelo.tablaFiltros.paginaActual = 1;
+      this.refrescarTabla();
+    });
+
+    document.querySelector("#filtroTablaEstado").addEventListener("change", (e) => {
+      Modelo.tablaFiltros.estado = e.target.value;
+      Modelo.tablaFiltros.paginaActual = 1;
+      this.refrescarTabla();
+    });
+
+    document.querySelectorAll(".tabla th[data-orden]").forEach((th) => {
+      th.style.cursor = "pointer";
+      th.addEventListener("click", () => {
+        const campo = th.dataset.orden;
+        if (Modelo.tablaFiltros.ordenCampo === campo) {
+          Modelo.tablaFiltros.ordenDir = Modelo.tablaFiltros.ordenDir === "asc" ? "desc" : "asc";
+        } else {
+          Modelo.tablaFiltros.ordenCampo = campo;
+          Modelo.tablaFiltros.ordenDir = "asc";
+        }
+        this.refrescarTabla();
+      });
+    });
+
+    document.querySelector("#btnPaginaAnterior").addEventListener("click", () => {
+      if (Modelo.tablaFiltros.paginaActual > 1) {
+        Modelo.tablaFiltros.paginaActual--;
+        this.refrescarTabla();
+      }
+    });
+
+    document.querySelector("#btnPaginaSiguiente").addEventListener("click", () => {
+      Modelo.tablaFiltros.paginaActual++;
+      this.refrescarTabla();
+    });
+
+    document.querySelector("#btnExportarCsv").addEventListener("click", () => {
+      const csv = Modelo.generarCSV();
+      Vista.descargarArchivoCSV(csv, "inventario_papel_y_tinta.csv");
+    });
+  },
+
+  iniciarEventosApi() {
+    const btnBuscarApi = document.querySelector("#btnBuscarApi");
+    const inputApi = document.querySelector("#inputApiBusqueda");
+    const mensajeApi = document.querySelector("#mensajeApi");
+    const resultadosApi = document.querySelector("#resultadosApi");
+
+    btnBuscarApi.addEventListener("click", async () => {
+      const termino = inputApi.value.trim();
+
+      if (!termino) {
+        Vista.mostrarMensaje(mensajeApi, "Por favor ingrese un título o autor para buscar.", "error");
+        return;
+      }
+
+      Vista.mostrarMensaje(mensajeApi, "🔍 Buscando en Open Library... Por favor espere.", "exito");
+      resultadosApi.innerHTML = "";
+
+      try {
+        const libros = await ServicioAPI.buscarLibrosEnLinea(termino);
+        this.resultadosApiActuales = libros;
+
+        if (libros.length === 0) {
+          Vista.mostrarMensaje(mensajeApi, "No se encontraron libros con ese término.", "error");
+          return;
+        }
+
+        Vista.mostrarMensaje(mensajeApi, `Se encontraron ${libros.length} resultados en línea:`, "exito");
+        Vista.pintarResultadosApi(libros);
+      } catch (error) {
+        Vista.mostrarMensaje(mensajeApi, error.message, "error");
+      }
+    });
+
+    resultadosApi.addEventListener("click", (e) => {
+      const btn = e.target.closest(".btn-agregar-api");
+      if (!btn) return;
+
+      const libro = this.resultadosApiActuales[Number(btn.dataset.indice)];
+      if (!libro) return;
+
+      const errores = Modelo.validar({
+        id: null,
+        nombre: libro.titulo,
+        autor: libro.autor,
+        precio: 45000,
+        existencias: 5,
+        categoria: "Narrativa y Ficción",
+        imagen: libro.imagen
+      });
+
+      if (errores.length > 0) {
+        Vista.mostrarMensaje(mensajeApi, errores.join(" "), "error");
+        return;
+      }
+
+      Modelo.agregar({
+        nombre: libro.titulo,
+        autor: libro.autor,
+        precio: 45000,
+        existencias: 5,
+        categoria: "Narrativa y Ficción",
+        imagen: libro.imagen,
+        caracteristicas: ["Pasta blanda", "Importado desde Open Library", "Edición estándar"]
+      });
+
+      Vista.mostrarMensaje(mensajeApi, `✓ "${libro.titulo}" fue agregado al inventario correctamente.`, "exito");
+      this.refrescar();
+    });
   },
 
   guardarProducto() {
@@ -171,6 +300,11 @@ const Controlador = {
     Vista.pintarCatalogo(filtrados);
   },
 
+  refrescarTabla() {
+    const datosTabla = Modelo.obtenerDatosTabla();
+    Vista.pintarTabla(datosTabla);
+  },
+
   refrescarCarrito() {
     const { totalDinero, totalUnidades } = Modelo.calcularTotalCarrito();
     Vista.pintarCarrito(Modelo.carrito, totalDinero, totalUnidades);
@@ -178,7 +312,7 @@ const Controlador = {
 
   refrescar() {
     this.refrescarCatalogo();
-    Vista.pintarTabla(Modelo.productos);
+    this.refrescarTabla();
     Vista.pintarCategorias(CATEGORIAS_LIBROS, Modelo.categoriaActual, Modelo.productos);
     Vista.pintarResumen(Modelo.calcularResumen());
     this.refrescarCarrito();
@@ -187,147 +321,5 @@ const Controlador = {
       Modelo.productos.map((p) => p.nombre),
       "Seleccione un producto"
     );
-  }
-};
-
-
-// ... (Todo el código que ya tenías en tu controlador) ...
-
-
-// ====================================================
-// ===== BÚSQUEDA EN API REST (OPEN LIBRARY) =====
-// ====================================================
-const btnBuscarApi = document.getElementById('btnBuscarApi');
-const inputApiBusqueda = document.getElementById('inputApiBusqueda');
-const resultadosApi = document.getElementById('resultadosApi');
-const mensajeApi = document.getElementById('mensajeApi');
-
-if (btnBuscarApi) {
-    btnBuscarApi.addEventListener('click', async () => {
-        const termino = inputApiBusqueda.value.trim();
-        
-        if (!termino) {
-            mensajeApi.textContent = 'Por favor ingrese un título o autor para buscar.';
-            mensajeApi.style.color = 'red';
-            return;
-        }
-
-        mensajeApi.textContent = '🔍 Buscando en Open Library... Por favor espere.';
-        mensajeApi.style.color = '#0066cc';
-        resultadosApi.innerHTML = '';
-
-        try {
-            // Llamada al servicio independiente api.js
-            const libros = await ServicioAPI.buscarLibrosEnLinea(termino);
-
-            if (libros.length === 0) {
-                mensajeApi.textContent = 'No se encontraron libros con ese término.';
-                mensajeApi.style.color = 'orange';
-                return;
-            }
-
-            mensajeApi.textContent = `Se encontraron ${libros.length} resultados:`;
-            mensajeApi.style.color = 'green';
-
-            // Renderizar los resultados devueltos por la API
-            libros.forEach(libro => {
-                const tarjeta = document.createElement('article');
-                tarjeta.className = 'tarjeta';
-                tarjeta.innerHTML = `
-                    <img src="${libro.imagen}" alt="${libro.titulo}" class="tarjeta__imagen">
-                    <div class="tarjeta__contenido">
-                        <h3 class="tarjeta__titulo">${libro.titulo}</h3>
-                        <p class="tarjeta__autor"><strong>Autor:</strong> ${libro.autor}</p>
-                        <p class="tarjeta__precio"><strong>Año:</strong> ${libro.anio}</p>
-                    </div>
-                    <div class="tarjeta__acciones">
-                       <button type="button" class="boton btn-agregar-api">
-                         Agregar al Inventario
-                      </button>
-                    </div>
-                `;
-                const btnAgregar = tarjeta.querySelector('.btn-agregar-api');
-                btnAgregar.addEventListener('click', () => {
-                window.agregarDesdeApi(libro.titulo, libro.autor, libro.imagen);
-                });
-                resultadosApi.appendChild(tarjeta);
-            });
-
-        } catch (error) {
-            mensajeApi.textContent = 'Error al conectar con el servicio de Open Library.';
-            mensajeApi.style.color = 'red';
-            console.error(error);
-        }
-    });
-}
-
-// Función para mostrar notificación flotante estilizada
-function mostrarNotificacion(mensaje, esError = false) {
-  const toast = document.createElement('div');
-  toast.className = 'notificacion-toast';
-  if (esError) toast.style.borderLeftColor = '#e74c3c';
-  toast.textContent = mensaje;
-  document.body.appendChild(toast);
-
-  requestAnimationFrame(() => toast.classList.add('visible'));
-
-  setTimeout(() => {
-    toast.classList.remove('visible');
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
-
-function mostrarNotificacion(mensaje, esError = false) {
-  const anterior = document.getElementById('toast-aviso');
-  if (anterior) anterior.remove();
-
-  const toast = document.createElement('div');
-  toast.id = 'toast-aviso';
-  toast.className = esError ? 'notificacion-toast notificacion-toast--error' : 'notificacion-toast';
-  toast.textContent = mensaje;
-
-  document.documentElement.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3500);
-}
-// Función global para importar un libro de la API al catálogo local
-window.agregarDesdeApi = function(titulo, autor, imagen) {
-  try {
-    const nuevoProducto = {
-      nombre: titulo,
-      autor: autor || 'Autor desconocido',
-      precio: 45000,
-      existencias: 5,
-      categoria: 'Narrativa y Ficción',
-      imagen: imagen || 'img/logo-libreria.svg',
-      caracteristicas: [
-        'Pasta blanda',
-        'Importado desde Open Library',
-        'Edición estándar'
-      ]
-    };
-
-    // 1. Guarda en el modelo / localStorage
-  Modelo.agregar(nuevoProducto);
-
-    // 2. Muestra el aviso justo encima de los resultados (imposible que se oculte)
-    const avisoApi = document.getElementById('mensajeApi');
-    if (avisoApi) {
-      avisoApi.style.color = '#ffffff';
-      avisoApi.textContent = `✓ "${titulo}" fue agregado al inventario correctamente.`;
-    }
-
-    // 3. Refresca TODA la interfaz (catálogo, tabla de inventario, contadores y selects)
-    Controlador.refrescar();
-
-    // 4. Baja el scroll de la tabla automáticamente para mostrar el libro nuevo al final
-    const contenedorTabla = document.querySelector('.tabla-contenedor');
-    if (contenedorTabla) {
-      contenedorTabla.scrollTop = contenedorTabla.scrollHeight;
-    }
-  } catch (error) {
-    console.error('Detalle del error al agregar:', error);
   }
 };
